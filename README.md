@@ -3,6 +3,11 @@
 </p>
 
 <p align="center">
+  <a href="https://ai-fitness-coach-drab-six.vercel.app"><img alt="Live demo" src="https://img.shields.io/badge/%F0%9F%9A%80%20Live%20demo-Open%20app-ff2d95?style=for-the-badge"></a>
+  <br/><a href="https://ai-fitness-coach-drab-six.vercel.app">ai-fitness-coach-drab-six.vercel.app</a>
+</p>
+
+<p align="center">
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-a3e635?style=for-the-badge"></a>
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
