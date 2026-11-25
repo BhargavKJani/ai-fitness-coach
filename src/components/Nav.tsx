@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AccountButton } from "./AccountButton";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Logo } from "./Logo";
@@ -36,6 +37,7 @@ export function Nav() {
               {l.label}
             </Link>
           ))}
+          <span className="ml-3"><AccountButton /></span>
           <Link href="/workout" className="btn-primary ml-3 !py-2">
             Start training
           </Link>
@@ -63,6 +65,7 @@ export function Nav() {
               {l.label}
             </Link>
           ))}
+          <div className="px-3 pt-2"><AccountButton /></div>
         </div>
       )}
     </header>

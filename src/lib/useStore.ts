@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import type { WeeklyPlan } from "./plan";
 import type { WorkoutSession } from "./stats";
 import { store } from "./storage";
+import { useAccount } from "@/components/AccountProvider";
 
 function subscribe(cb: () => void) {
   window.addEventListener("afc-storage", cb);
@@ -37,8 +38,11 @@ export function useSessions(): WorkoutSession[] {
   return useSyncExternalStore(subscribe, getSessions, () => EMPTY);
 }
 
+/** Pro features: a paid Day pass or Monthly plan when payments are on; otherwise the local demo toggle. */
 export function usePro(): boolean {
-  return useSyncExternalStore(subscribe, store.isPro, () => false);
+  const local = useSyncExternalStore(subscribe, store.isPro, () => false);
+  const acc = useAccount();
+  return acc.billing ? !!acc.account?.paid : local;
 }
 
 export function useSavedPlan(): WeeklyPlan | null {

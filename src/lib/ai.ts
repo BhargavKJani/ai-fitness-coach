@@ -2,7 +2,8 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { GOALS, LEVELS, WEEKDAYS, generateDemoPlan, isWeeklyPlanShape, type PlanRequest, type WeeklyPlan } from "./plan";
 
-export const MODEL = "claude-sonnet-5-5";
+// Haiku 5.5 keeps a plan's AI cost well under ₹1, which makes the ₹9 / ₹49 plans profitable.
+export const MODEL = "claude-haiku-5-5";
 
 export function aiEnabled(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY?.trim());
@@ -58,8 +59,9 @@ export interface PlanResult {
 }
 
 /** Generate a weekly plan with Claude, falling back to the rule-based demo plan without a key or on failure. */
-export async function generatePlan(req: PlanRequest): Promise<PlanResult> {
-  if (!aiEnabled()) return { plan: generateDemoPlan(req), mode: "demo" };
+/** `allowAi` is decided by the route from the caller's plan. */
+export async function generatePlan(req: PlanRequest, allowAi = aiEnabled()): Promise<PlanResult> {
+  if (!allowAi) return { plan: generateDemoPlan(req), mode: "demo" };
 
   const client = new Anthropic();
   const user = [
@@ -78,7 +80,7 @@ export async function generatePlan(req: PlanRequest): Promise<PlanResult> {
       max_tokens: 8000,
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
-      output_config: { effort: "low", format: { type: "json_schema", schema: PLAN_SCHEMA } },
+      output_config: { format: { type: "json_schema", schema: PLAN_SCHEMA } },
       system: SYSTEM,
       messages: [{ role: "user", content: user }],
     });

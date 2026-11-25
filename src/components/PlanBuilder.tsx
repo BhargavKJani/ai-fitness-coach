@@ -5,6 +5,9 @@ import { useState } from "react";
 import { GOALS, LEVELS, type Goal, type Level, type WeeklyPlan } from "@/lib/plan";
 import { store } from "@/lib/storage";
 import { usePro, useSavedPlan } from "@/lib/useStore";
+import { useAccount } from "./AccountProvider";
+import { postAi, startAiUse } from "@/lib/billing/client";
+import { USE_NAME } from "@/lib/billing/config";
 
 const FREE_PLANS_PER_WEEK = 1;
 const WEEK_MS = 7 * 24 * 3600 * 1000;
@@ -12,6 +15,7 @@ const WEEK_MS = 7 * 24 * 3600 * 1000;
 export function PlanBuilder() {
   const saved = useSavedPlan();
   const pro = usePro();
+  const acc = useAccount();
   const [goal, setGoal] = useState<Goal>("build-muscle");
   const [level, setLevel] = useState<Level>("beginner");
   const [days, setDays] = useState(3);
@@ -24,7 +28,8 @@ export function PlanBuilder() {
   const plan = saved;
   const [now] = useState(() => (typeof window === "undefined" ? 0 : Date.now()));
   const unlockAt = saved ? new Date(saved.createdAt).getTime() + WEEK_MS : 0;
-  const lockedUntil = !pro && saved && saved.source === "claude" && now < unlockAt ? new Date(unlockAt) : null;
+  // With payments on, the server counts AI plans; the old one-plan-a-week lock applies only in demo mode.
+  const lockedUntil = !acc.billing && !pro && saved && saved.source === "claude" && now < unlockAt ? new Date(unlockAt) : null;
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -33,15 +38,14 @@ export function PlanBuilder() {
     setError(null);
     setWarning(null);
     try {
-      const res = await fetch("/api/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goal, level, daysPerWeek: days, minutesPerSession: minutes, notes }),
-      });
-      const data = (await res.json()) as { plan?: WeeklyPlan; warning?: string; error?: string };
-      if (!res.ok || !data.plan) throw new Error(data.error ?? `Request failed (${res.status})`);
+      const { sessionId, notice } = await startAiUse(acc);
+      const data = await postAi<{ plan?: WeeklyPlan; warning?: string; error?: string }>(
+        acc, "/api/plan", { goal, level, daysPerWeek: days, minutesPerSession: minutes, notes }, sessionId,
+      );
+      if (!data.plan) throw new Error(data.error ?? "Request failed");
       store.savePlan(data.plan);
-      if (data.warning) setWarning(data.warning);
+      if (notice) setWarning(`${notice} This is a template plan.`);
+      else if (data.warning) setWarning(data.warning);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -127,6 +131,22 @@ export function PlanBuilder() {
               "Generate my plan ✨"
             )}
           </button>
+          {acc.billing && (
+            <p className="text-xs text-slate-400" data-testid="ai-quota">
+              {!acc.account ? (
+                <button type="button" className="text-cyan-300 underline" onClick={() => void acc.signIn()}>
+                  Sign in with Google for 3 free {USE_NAME.many}
+                </button>
+              ) : acc.account.left > 0 ? (
+                <>{acc.account.left} {acc.account.left === 1 ? USE_NAME.one : USE_NAME.many} left by Claude</>
+              ) : (
+                <>
+                  No {USE_NAME.many} left, so you&apos;ll get a template plan.{" "}
+                  <Link href="/pricing" className="text-cyan-300 underline">Get more from ₹9</Link>
+                </>
+              )}
+            </p>
+          )}
           {lockedUntil && (
             <p className="text-xs text-slate-400">
               Free plan: {FREE_PLANS_PER_WEEK} AI plan per week. Next one unlocks{" "}

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useAccount } from "./AccountProvider";
+import { BillingPricing } from "./BillingPricing";
 import { store } from "@/lib/storage";
 import { usePro } from "@/lib/useStore";
 
@@ -43,6 +45,9 @@ const TIERS = [
 export function Pricing() {
   const [yearly, setYearly] = useState(false);
   const pro = usePro();
+  const { billing } = useAccount();
+  // Real UPI plans when Razorpay + Supabase are configured; otherwise the original preview plans.
+  if (billing) return <BillingPricing compact />;
 
   return (
     <div>

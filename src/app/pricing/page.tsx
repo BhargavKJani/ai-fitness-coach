@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Pricing" };
 const FAQ = [
   ["Do you upload my camera feed?", "No. Pose detection runs on-device with MediaPipe in WebAssembly. Only your rep counts and stats are saved, in your browser."],
   ["What equipment do I need?", "A laptop or phone camera. A pair of dumbbells helps for curls, but bodyweight works too."],
-  ["Can I cancel anytime?", "Yes. Pro is billed monthly or yearly and can be cancelled at any time; you keep Pro until the end of the period."],
+  ["Do paid plans renew automatically?", "No. You pay once by UPI and the plan ends on its own, so there is nothing to cancel."],
   ["Is the AI plan medical advice?", "No. Plans are general fitness guidance. Talk to a professional if you have injuries or health conditions."],
 ];
 
@@ -17,7 +17,7 @@ export default function PricingPage() {
         Train smarter. <span className="neon-text">Pay less than a PT session.</span>
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-center text-slate-400">
-        One personal-training session costs ~$60. PulseForm Pro coaches every rep, every day, for $9.99/month.
+        Rep counting and form checks are free forever. Pay by UPI only when you want AI plans and full form reports.
       </p>
       <div className="mt-12">
         <Pricing />
